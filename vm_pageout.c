@@ -1151,7 +1151,8 @@ vm_pageout_scan(struct vm_domain *vmd, int pass)
 			/*
 			 * Invalid pages can be easily freed
 			 */
-			vm_page_free_ir(m);
+			
+			vm_page_free_ir(m);/*insert in the rear instead of the front */
 			PCPU_INC(cnt.v_dfree);
 			--page_shortage;
 			vmd->cached_pages_counter++;
@@ -1391,8 +1392,13 @@ relock_queues:
 	 * active page within 'update_period' seconds.
 	 */
 	scan_tick = ticks;
-	if (vm_pageout_update_period != 0) {
-		min_scan = pq->pq_cnt;
+	if(pass==0 && vm_pageout_update_period !=0){
+	maxscan /=vm_pageout_update_period;
+	page_shortage=maxscan;
+	}
+	 if (vm_pageout_update_period != 0) {
+			
+	 	 min_scan = pq->pq_cnt;
 		min_scan *= scan_tick - vmd->vmd_last_active_scan;
 		min_scan /= hz * vm_pageout_update_period;
 	} else
